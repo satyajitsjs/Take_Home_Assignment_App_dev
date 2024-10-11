@@ -42,7 +42,7 @@ def user_login(request):
             }, status=status.HTTP_200_OK)
 
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
+    print(serializer.errorsrializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])

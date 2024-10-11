@@ -2,12 +2,15 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,10 +26,13 @@ function Login() {
         setError("");
         localStorage.setItem("access_token", response.data.access);
         localStorage.setItem("refresh_token", response.data.refresh);
+        toast.success("Login successful!");
+        navigate("/");
       }
     } catch (error) {
       setError(error.response?.data?.error || "Login failed");
       setSuccess("");
+      toast.error(error.response?.data?.error || "Login failed");
     }
   };
 
