@@ -2,6 +2,7 @@ from django.contrib import admin
 from .forms import *
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import Invoice
 # Register your models here.
 
 class UserAdmin(BaseUserAdmin):
@@ -39,3 +40,9 @@ admin.site.register(User, UserAdmin)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 admin.site.unregister(Group)
+
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ["invoice_number","store_name","city","zip_code","county"]
+    search_fields = ["invoice_number","store_name"]
+
+admin.site.register(Invoice,InvoiceAdmin)

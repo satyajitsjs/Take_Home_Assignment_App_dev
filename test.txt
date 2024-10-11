@@ -1,0 +1,7 @@
+CREATE USER take_home WITH PASSWORD 'take_home';
+
+ALTER ROLE take_home SET client_encoding TO 'utf8';
+ALTER ROLE take_home SET default_transaction_isolation TO 'read committed';
+ALTER ROLE take_home SET timezone TO 'UTC';
+
+GRANT ALL PRIVILEGES ON DATABASE take_home TO take_home;

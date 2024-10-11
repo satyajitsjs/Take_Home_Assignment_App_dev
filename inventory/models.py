@@ -65,3 +65,18 @@ class Invoice(models.Model):
 
     def __str__(self):
         return self.invoice_number
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['invoice_number']),
+            models.Index(fields=['store_number']),
+            models.Index(fields=['date']),
+            models.Index(fields=['city']),
+            models.Index(fields=['county_number']),
+            models.Index(fields=['zip_code']),
+            models.Index(fields=['store_name']),
+            models.Index(fields=['category']),
+            models.Index(fields=['vendor_name']),
+
+        ]
+
