@@ -17,6 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path , include
 
+
+handler404 = 'inventory.views.handler404'
+handler500 = 'inventory.views.handler500'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/',include('inventory.urls'))

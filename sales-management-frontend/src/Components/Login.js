@@ -4,6 +4,7 @@ import axios from "axios";
 import { TextField, Button, Container, Typography, Box } from "@mui/material";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -24,8 +25,14 @@ function Login() {
       if (response.status === 200) {
         setSuccess("Login successful!");
         setError("");
-        localStorage.setItem("access_token", response.data.access);
-        localStorage.setItem("refresh_token", response.data.refresh);
+
+        // Set cookies with expiration times
+        const accessTokenExpiry = new Date(new Date().getTime() + 30 * 60 * 1000); // 30 minutes
+        const refreshTokenExpiry = new Date(new Date().getTime() + 24 * 60 * 60 * 1000); // 1 day
+
+        Cookies.set("access_token", response.data.access, { expires: accessTokenExpiry });
+        Cookies.set("refresh_token", response.data.refresh, { expires: refreshTokenExpiry });
+
         toast.success("Login successful!");
         navigate("/");
       }

@@ -7,14 +7,15 @@ import Button from "@mui/material/Button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from 'react-toastify';
+import Cookies from "js-cookie";
 
 function Header() {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem("access_token");
+  const isLoggedIn = !!Cookies.get("access_token");
 
   const handleLogout = async () => {
-    const refreshToken = localStorage.getItem("refresh_token");
-    const accessToken = localStorage.getItem("access_token");
+    const refreshToken = Cookies.get("refresh_token");
+    const accessToken = Cookies.get("access_token");
     try {
       await axios.post(
         `${process.env.REACT_APP_API_URL}/logout/`,
@@ -25,8 +26,8 @@ function Header() {
           },
         }
       );
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+      Cookies.remove("access_token");
+      Cookies.remove("refresh_token");
       toast.success("Logout successful!");
       navigate("/login");
     } catch (error) {
@@ -46,11 +47,11 @@ function Header() {
         </Button>
         {isLoggedIn ? (
           <>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
             <Button color="inherit" component={Link} to='/invoice'>
               Invoice
+            </Button>
+            <Button color="inherit" onClick={handleLogout}>
+              Logout
             </Button>
           </>
         ) : (

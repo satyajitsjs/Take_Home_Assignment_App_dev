@@ -14,7 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import environ
 from pathlib import Path
-
+import logging
+import colorlog
 
 # Initialize environ and read .env file
 env = environ.Env()
@@ -33,7 +34,7 @@ SECRET_KEY = 'django-insecure-84b7r&uz7*^1$)g++4$65jljc(d9r4+@k-kl_o9a+f06$xwc4f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -70,7 +71,7 @@ ROOT_URLCONF = 'sales_management_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['inventory/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -170,9 +171,11 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  
+# ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 CACHES = {
@@ -183,4 +186,48 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
+}
+
+CACHE_TIMEOUT = env('CACHE_TIMEOUT', default=60)
+
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'colored',  # Use colored formatting
+        },
+    },
+    'formatters': {
+        'colored': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': '%(log_color)s%(levelname)s: %(message)s',
+            'log_colors': {
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'bold_red',
+            },
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Set to INFO so that INFO logs are displayed
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',  # This can stay at WARNING for Django internals
+            'propagate': False,
+        },
+        'my_custom_logger': {
+            'handlers': ['console'],
+            'level': 'INFO',  # Use INFO level so the logs show up
+            'propagate': False,
+        },
+    },
 }
