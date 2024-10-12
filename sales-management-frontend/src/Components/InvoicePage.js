@@ -5,7 +5,6 @@ import InvoiceForm from './InvoiceForm';
 import axios from 'axios';
 import { Container, Box, Button } from '@mui/material';
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 function InvoicePage() {
@@ -14,7 +13,6 @@ function InvoicePage() {
   const [invoices, setInvoices] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchInvoices();
@@ -28,7 +26,7 @@ function InvoicePage() {
         },
       });
       setInvoices(response.data.results);
-      setTotalPages(response.data.total_pages);
+      setTotalPages(Math.ceil(response.data.count / 100)); 
     } catch (error) {
       console.error('Failed to fetch invoices', error);
       toast.error('Failed to fetch invoices');
@@ -43,7 +41,7 @@ function InvoicePage() {
   const handleSave = () => {
     setShowForm(false);
     setSelectedInvoice(null);
-    fetchInvoices(); // Fetch the latest invoices after saving
+    fetchInvoices();
   };
 
   const handleCancel = () => {
@@ -61,7 +59,7 @@ function InvoicePage() {
   
       if (response.status === 204) {
         toast.success('Invoice deleted successfully');
-        fetchInvoices(); // Fetch the latest invoices after deletion
+        fetchInvoices();
       } else {
         toast.error('Failed to delete invoice');
       }

@@ -75,6 +75,7 @@ def user_logout(request):
         logger.error(f"User logout failed: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def invoice_get_create(request):
@@ -88,7 +89,7 @@ def invoice_get_create(request):
             return Response(json.loads(cached_data), status=status.HTTP_200_OK)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 100  
+        paginator.page_size = 100 
 
         invoices = Invoice.objects.all().order_by('-id')
         result_page = paginator.paginate_queryset(invoices, request)
@@ -114,7 +115,6 @@ def invoice_get_create(request):
 
 
 def invalidate_invoice_page(invoice):
-    # Calculate the row number (position) of the invoice using the `ROW_NUMBER()` window function
     queryset = Invoice.objects.annotate(row_number=Window(
         expression=RowNumber(),
         order_by=F('id').desc()
@@ -123,12 +123,10 @@ def invalidate_invoice_page(invoice):
     if queryset.exists():
         invoice_position = queryset[0].row_number
 
-        # Determine which page this invoice is on
         paginator = PageNumberPagination()
-        paginator.page_size = 100  # Assuming 100 items per page
+        paginator.page_size = 100  
         page_number = (invoice_position - 1) // paginator.page_size + 1
 
-        # Invalidate the specific page cache
         cache_key = f"invoices_page_{page_number}"
         cache.delete(cache_key)
         logger.info(f"Deleted cache for page {page_number} containing invoice {invoice.id}")
@@ -226,7 +224,6 @@ def dashboard_data(request):
 
     logger.info("Dashboard data fetched successfully")
     return Response(aggregated_data, status=status.HTTP_200_OK)
-
 def handler404(request, exception):
     logger.error("404 error occurred")
     return render(request, 'errors/404.html', status=404)

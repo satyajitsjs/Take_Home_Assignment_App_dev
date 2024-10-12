@@ -50,6 +50,9 @@ function Header() {
             <Button color="inherit" component={Link} to='/invoice'>
               Invoice
             </Button>
+            <Button color="inherit" component={Link} to='/dashboard'>
+              Dashboard
+            </Button>
             <Button color="inherit" onClick={handleLogout}>
               Logout
             </Button>

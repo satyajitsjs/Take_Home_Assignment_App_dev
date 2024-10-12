@@ -9,6 +9,7 @@ import InvoicePage from './Components/InvoicePage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PrivateRoute from './PrivateRoute';
+import Dashboard from './Components/Dashboard';
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/invoice" element={<PrivateRoute element={InvoicePage} />} />
+        <Route path="/dashboard" element={<PrivateRoute element={Dashboard} />} />
       </Routes>
       <ToastContainer />
     </Router>
