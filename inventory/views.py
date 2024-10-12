@@ -15,6 +15,8 @@ import json
 import logging
 from django.db.models import Window, F
 from django.db.models.functions import RowNumber
+from django.http import JsonResponse
+from django.db.models import Q
 
 
 logger = logging.getLogger('my_custom_logger')
@@ -184,6 +186,7 @@ def invoice_get_update_delete(request, invoice_id):
         logger.info(f"Invoice {invoice_id} deleted successfully")
         return Response({'message': 'Invoice deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_data(request):
@@ -200,20 +203,28 @@ def dashboard_data(request):
     queryset = Invoice.objects.all()
 
     if store_name:
+        logger.info(f"Filtering by store_name: {store_name}")
         queryset = queryset.filter(store_name=store_name)
     if city:
+        logger.info(f"Filtering by city: {city}")
         queryset = queryset.filter(city=city)
     if zip_code:
+        logger.info(f"Filtering by zip_code: {zip_code}")
         queryset = queryset.filter(zip_code=zip_code)
     if county_number:
+        logger.info(f"Filtering by county_number: {county_number}")
         queryset = queryset.filter(county_number=county_number)
     if county:
+        logger.info(f"Filtering by county: {county}")
         queryset = queryset.filter(county=county)
     if category:
+        logger.info(f"Filtering by category: {category}")
         queryset = queryset.filter(category=category)
     if vendor_number:
+        logger.info(f"Filtering by vendor_number: {vendor_number}")
         queryset = queryset.filter(vendor_number=vendor_number)
     if item_number:
+        logger.info(f"Filtering by item_number: {item_number}")
         queryset = queryset.filter(item_number=item_number)
 
     aggregated_data = queryset.aggregate(
@@ -222,8 +233,49 @@ def dashboard_data(request):
         total_profit=Sum('state_bottle_cost'),
     )
 
+    sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))
+    stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))
+    profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))
+
+    response_data = {
+        'total_stock': aggregated_data['total_stock'],
+        'total_sales': aggregated_data['total_sales'],
+        'total_profit': aggregated_data['total_profit'],
+        'salesData': {
+            'labels': [data['date'] for data in sales_data],
+            'values': [data['total_sales'] for data in sales_data],
+        },
+        'stockData': {
+            'labels': [data['date'] for data in stock_data],
+            'values': [data['total_stock'] for data in stock_data],
+        },
+        'profitData': {
+            'labels': [data['date'] for data in profit_data],
+            'values': [data['total_profit'] for data in profit_data],
+        },
+    }
+
     logger.info("Dashboard data fetched successfully")
-    return Response(aggregated_data, status=status.HTTP_200_OK)
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+def autocomplete(request):
+    query = request.GET.get('query', '')
+    filter_type = request.GET.get('filter_type', '')
+
+    if not query or not filter_type:
+        return JsonResponse({'results': []})
+
+    try:
+        filter_kwargs = {f"{filter_type}__icontains": query}
+        results = Invoice.objects.filter(**filter_kwargs).values_list(filter_type, flat=True).distinct()
+
+        return JsonResponse({'results': list(results)})
+    except Exception as e:
+        logger.error(f"Autocomplete error: {e}")
+        return JsonResponse({'results': [], 'error': 'An error occurred while processing your request.'})
+
+
 def handler404(request, exception):
     logger.error("404 error occurred")
     return render(request, 'errors/404.html', status=404)

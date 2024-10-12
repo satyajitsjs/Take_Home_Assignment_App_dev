@@ -11,4 +11,7 @@ urlpatterns = [
 
     path('dashboard/', v.dashboard_data, name='dashboard_data'),
 
+    path('autocomplete/', v.autocomplete, name='autocomplete'),
+
+
 ]
