@@ -18,17 +18,17 @@ function InvoiceList({ invoices, onEdit, onDelete, page, totalPages, onPageChang
     <Container>
       <Box mt={5}>
         <Typography variant="h4" gutterBottom>
-          Invoices
+          <b>Invoices</b>
         </Typography>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Invoice Number</TableCell>
-              <TableCell>Store Name</TableCell>
-              <TableCell>City</TableCell>
-              <TableCell>Zip Code</TableCell>
-              <TableCell>County</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell><b>Invoice Number</b></TableCell>
+              <TableCell><b>Store Name</b></TableCell>
+              <TableCell><b>City</b></TableCell>
+              <TableCell><b>Zip Code</b></TableCell>
+              <TableCell><b>County</b></TableCell>
+              <TableCell><b>Actions</b></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

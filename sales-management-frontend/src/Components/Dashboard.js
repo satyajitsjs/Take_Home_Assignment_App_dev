@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Box, Typography, TextField, Button, Grid, CircularProgress, Autocomplete, Paper, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Container, Box, Typography, TextField, Button, Grid, CircularProgress, Autocomplete, Paper, Checkbox, FormControlLabel, FormGroup, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import ClearIcon from '@mui/icons-material/Clear';
 import StoreIcon from '@mui/icons-material/Store';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -44,6 +43,7 @@ const useStyles = makeStyles(() => ({
   },
   card: {
     marginTop: 24, // 3 * 8px (default spacing unit)
+    marginBottom: 32, // 3 * 8px (default spacing unit)
   },
   filterButton: {
     marginTop: 16, // 2 * 8px (default spacing unit)
@@ -102,9 +102,11 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [autocompleteOptions, setAutocompleteOptions] = useState({});
   const [chartType, setChartType] = useState('line');
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
+    // eslint-disable-next-line
   }, []);
 
   const fetchDashboardData = async () => {
@@ -142,12 +144,7 @@ function Dashboard() {
 
   const handleFilterSubmit = (e) => {
     e.preventDefault();
-    fetchDashboardData();
-  };
-
-  const handleClearFilters = () => {
-    setFilters(initialFilters);
-    setSelectedFilters([]);
+    setFilterDialogOpen(false);
     fetchDashboardData();
   };
 
@@ -194,6 +191,14 @@ function Dashboard() {
     });
   };
 
+  const handleOpenFilterDialog = () => {
+    setFilterDialogOpen(true);
+  };
+
+  const handleCloseFilterDialog = () => {
+    setFilterDialogOpen(false);
+  };
+
   if (loading) {
     return (
       <Box className={classes.loading}>
@@ -204,6 +209,17 @@ function Dashboard() {
 
   return (
     <Container>
+      <Grid container justifyContent="flex-end">
+        <Button
+          variant="contained"
+          color="primary"
+          className={classes.filterButton}
+          startIcon={<FilterListIcon />}
+          onClick={handleOpenFilterDialog}
+        >
+          Add Filter
+        </Button>
+      </Grid>
       <Grid container spacing={3} className={classes.card}>
         <Grid item xs={12} sm={4}>
           <Paper className={classes.paper}>
@@ -233,79 +249,81 @@ function Dashboard() {
           </Paper>
         </Grid>
       </Grid>
-      <form onSubmit={handleFilterSubmit}>
-        <FormGroup row>
-          {Object.keys(initialFilters).map(filterType => (
-            <FormControlLabel
-              key={filterType}
-              control={
-                <Checkbox
-                  checked={selectedFilters.includes(filterType)}
-                  onChange={handleFilterSelection}
-                  name={filterType}
+      <Dialog open={filterDialogOpen} onClose={handleCloseFilterDialog} fullWidth maxWidth="md">
+        <DialogTitle>Filters</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleFilterSubmit}>
+            <FormGroup row>
+              {Object.keys(initialFilters).map(filterType => (
+                <FormControlLabel
+                  key={filterType}
+                  control={
+                    <Checkbox
+                      checked={selectedFilters.includes(filterType)}
+                      onChange={handleFilterSelection}
+                      name={filterType}
+                    />
+                  }
+                  label={filterType.replace('_', ' ').toUpperCase()}
                 />
-              }
-              label={filterType.replace('_', ' ').toUpperCase()}
-            />
-          ))}
-        </FormGroup>
-        <Grid container spacing={2} className={classes.formControl}>
-          {selectedFilters.map(filterType => (
-            <Grid item xs={12} sm={6} md={4} key={filterType}>
-              <Autocomplete
-                freeSolo
-                options={autocompleteOptions[filterType] || []}
-                onInputChange={(event, value) => handleAutocompleteInputChange(filterType, value)}
-                onChange={(event, value) => handleAutocompleteChange(filterType, value)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={filterType.replace('_', ' ').toUpperCase()}
-                    name={filterType}
-                    fullWidth
-                    onChange={handleInputChange}
+              ))}
+            </FormGroup>
+            <Grid container spacing={2} className={classes.formControl}>
+              {selectedFilters.map(filterType => (
+                <Grid item xs={12} sm={6} md={4} key={filterType}>
+                  <Autocomplete
+                    freeSolo
+                    options={autocompleteOptions[filterType] || []}
+                    onInputChange={(event, value) => handleAutocompleteInputChange(filterType, value)}
+                    onChange={(event, value) => handleAutocompleteChange(filterType, value)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={filterType.replace('_', ' ').toUpperCase()}
+                        name={filterType}
+                        fullWidth
+                        onChange={handleInputChange}
+                      />
+                    )}
                   />
-                )}
-              />
+                </Grid>
+              ))}
+              <Grid item xs={12} sm={6} md={4}>
+                <TextField
+                  select
+                  label="Chart Type"
+                  value={chartType}
+                  onChange={(e) => setChartType(e.target.value)}
+                  fullWidth
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="line">Line</option>
+                  <option value="bar">Bar</option>
+                  <option value="pie">Pie</option>
+                </TextField>
+              </Grid>
             </Grid>
-          ))}
-          <Grid item xs={12} sm={6} md={4}>
-            <TextField
-              select
-              label="Chart Type"
-              value={chartType}
-              onChange={(e) => setChartType(e.target.value)}
-              fullWidth
-              SelectProps={{
-                native: true,
-              }}
-            >
-              <option value="line">Line</option>
-              <option value="bar">Bar</option>
-              <option value="pie">Pie</option>
-            </TextField>
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              className={classes.filterButton}
-              startIcon={<FilterListIcon />}
-            >
-              Apply Filters
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseFilterDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleFilterSubmit} color="primary">
+            Apply Filters
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Grid container spacing={3} className={classes.card}>
-        <Grid item xs={12} className={classes.chartContainer}>
+        <Grid item xs={12} md={6} className={classes.chartContainer}>
           <ChartComponent title="Sales Over Time" data={data.salesData} chartType={chartType} />
         </Grid>
-        <Grid item xs={12} className={classes.chartContainer}>
+        <Grid item xs={12} md={6} className={classes.chartContainer}>
           <ChartComponent title="Stock Over Time" data={data.stockData} chartType={chartType} />
         </Grid>
-        <Grid item xs={12} className={classes.chartContainer}>
+        <Grid item xs={12} md={6} className={classes.chartContainer}>
           <ChartComponent title="Profit Over Time" data={data.profitData} chartType={chartType} />
         </Grid>
       </Grid>
