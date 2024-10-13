@@ -12,6 +12,8 @@ import {
   Typography,
   Pagination,
 } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function InvoiceList({ invoices, onEdit, onDelete, page, totalPages, onPageChange }) {
   return (
@@ -42,18 +44,19 @@ function InvoiceList({ invoices, onEdit, onDelete, page, totalPages, onPageChang
                 <TableCell>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="inherit"
                     onClick={() => onEdit(invoice)}
-                    style={{ marginRight: "10px" }}
+                    style={{ marginRight: "10px", minWidth: "30px" }}
                   >
-                    Edit
+                    <EditIcon />
                   </Button>
                   <Button
                     variant="contained"
-                    color="secondary"
+                    color="error"
                     onClick={() => onDelete(invoice.id)}
+                    style={{ minWidth: "30px" }}
                   >
-                    Delete
+                    <DeleteIcon />
                   </Button>
                 </TableCell>
               </TableRow>
