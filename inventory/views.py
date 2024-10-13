@@ -219,45 +219,30 @@ def invoice_get_update_delete(request, invoice_id):
         return Response({'message': 'Invoice deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_data(request):
     logger.info("Fetching dashboard data")
-    store_name = request.GET.get('store_name', None)
-    city = request.GET.get('city', None)
-    zip_code = request.GET.get('zip_code', None)
-    county_number = request.GET.get('county_number', None)
-    county = request.GET.get('county', None)
-    category = request.GET.get('category', None)
-    vendor_number = request.GET.get('vendor_number', None)
-    item_number = request.GET.get('item_number', None)
+    filters = {
+        'store_name': request.GET.get('store_name', None),
+        'city': request.GET.get('city', None),
+        'zip_code': request.GET.get('zip_code', None),
+        'county_number': request.GET.get('county_number', None),
+        'county': request.GET.get('county', None),
+        'category': request.GET.get('category', None),
+        'vendor_number': request.GET.get('vendor_number', None),
+        'item_number': request.GET.get('item_number', None),
+    }
 
     queryset = Invoice.objects.all()
+    filters_applied = False
 
-    if store_name:
-        logger.info(f"Filtering by store_name: {store_name}")
-        queryset = queryset.filter(store_name=store_name)
-    if city:
-        logger.info(f"Filtering by city: {city}")
-        queryset = queryset.filter(city=city)
-    if zip_code:
-        logger.info(f"Filtering by zip_code: {zip_code}")
-        queryset = queryset.filter(zip_code=zip_code)
-    if county_number:
-        logger.info(f"Filtering by county_number: {county_number}")
-        queryset = queryset.filter(county_number=county_number)
-    if county:
-        logger.info(f"Filtering by county: {county}")
-        queryset = queryset.filter(county=county)
-    if category:
-        logger.info(f"Filtering by category: {category}")
-        queryset = queryset.filter(category=category)
-    if vendor_number:
-        logger.info(f"Filtering by vendor_number: {vendor_number}")
-        queryset = queryset.filter(vendor_number=vendor_number)
-    if item_number:
-        logger.info(f"Filtering by item_number: {item_number}")
-        queryset = queryset.filter(item_number=item_number)
+    for key, value in filters.items():
+        if value:
+            logger.info(f"Filtering by {key}: {value}")
+            queryset = queryset.filter(**{key: value})
+            filters_applied = True
 
     aggregated_data = queryset.aggregate(
         total_stock=Sum('bottles_sold'), 
@@ -265,14 +250,19 @@ def dashboard_data(request):
         total_profit=Sum('state_bottle_cost'),
     )
 
-    sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))
-    stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))
-    profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))
+    if filters_applied:
+        sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))
+        stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))
+        profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))
+    else:
+        sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))[:10]
+        stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))[:10]
+        profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))[:10]
 
     response_data = {
         'total_stock': aggregated_data['total_stock'],
-        'total_sales': aggregated_data['total_sales'],
-        'total_profit': aggregated_data['total_profit'],
+        'total_sales': round(aggregated_data['total_sales'], 2) if aggregated_data['total_sales'] is not None else None,
+        'total_profit': round(aggregated_data['total_profit'], 2) if aggregated_data['total_profit'] is not None else None,
         'salesData': {
             'labels': [data['date'] for data in sales_data],
             'values': [data['total_sales'] for data in sales_data],

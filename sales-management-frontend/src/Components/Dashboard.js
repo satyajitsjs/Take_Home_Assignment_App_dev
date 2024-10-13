@@ -69,6 +69,12 @@ const useStyles = makeStyles(() => ({
   formControl: {
     marginTop: 16,
   },
+  chartContainer: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+  },
 }));
 
 function Dashboard() {
@@ -293,13 +299,13 @@ function Dashboard() {
         </Grid>
       </form>
       <Grid container spacing={3} className={classes.card}>
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.chartContainer}>
           <ChartComponent title="Sales Over Time" data={data.salesData} chartType={chartType} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.chartContainer}>
           <ChartComponent title="Stock Over Time" data={data.stockData} chartType={chartType} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.chartContainer}>
           <ChartComponent title="Profit Over Time" data={data.profitData} chartType={chartType} />
         </Grid>
       </Grid>
