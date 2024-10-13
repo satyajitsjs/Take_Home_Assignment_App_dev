@@ -20,7 +20,6 @@ from django.db.models import Q
 from django.contrib.auth import login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from asgiref.sync import sync_to_async
 
 logger = logging.getLogger('my_custom_logger')
 

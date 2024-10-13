@@ -104,11 +104,18 @@ function Dashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
+      const activeFilters = selectedFilters.reduce((acc, filter) => {
+        if (filters[filter]) {
+          acc[filter] = filters[filter];
+        }
+        return acc;
+      }, {});
+
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/dashboard/`, {
         headers: {
           Authorization: `Bearer ${Cookies.get('access_token')}`
         },
-        params: selectedFilters.length > 0 ? filters : {}
+        params: activeFilters
       });
       setData(response.data);
     } catch (error) {
@@ -163,9 +170,22 @@ function Dashboard() {
 
   const handleFilterSelection = (event) => {
     const { name, checked } = event.target;
-    setSelectedFilters(prevSelectedFilters => 
-      checked ? [...prevSelectedFilters, name] : prevSelectedFilters.filter(filter => filter !== name)
-    );
+    setSelectedFilters(prevSelectedFilters => {
+      const newSelectedFilters = checked
+        ? [...prevSelectedFilters, name]
+        : prevSelectedFilters.filter(filter => filter !== name);
+
+      // Remove the filter value from the filters object if it is deselected
+      if (!checked) {
+        setFilters(prevFilters => {
+          const newFilters = { ...prevFilters };
+          delete newFilters[name];
+          return newFilters;
+        });
+      }
+
+      return newSelectedFilters;
+    });
   };
 
   if (loading) {
