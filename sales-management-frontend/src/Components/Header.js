@@ -1,5 +1,5 @@
 // src/Components/Header.js
-import React from "react";
+import React, { useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from 'react-toastify';
 import Cookies from "js-cookie";
+import refreshTokens from "../refreshTokens";
 
 function Header() {
   const navigate = useNavigate();
@@ -35,6 +36,16 @@ function Header() {
       toast.error("Logout failed");
     }
   };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      const interval = setInterval(() => {
+        refreshTokens();
+      }, 10000); 
+
+      return () => clearInterval(interval);
+    }
+  }, [isLoggedIn]);
 
   return (
     <AppBar position="static">

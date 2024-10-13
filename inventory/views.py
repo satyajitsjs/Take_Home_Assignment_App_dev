@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework import status
 from .serializers import UserRegisterSerializer, UserLoginSerializer, InvoiceSerializer
 from django.contrib.auth import get_user_model
@@ -17,7 +17,10 @@ from django.db.models import Window, F
 from django.db.models.functions import RowNumber
 from django.http import JsonResponse
 from django.db.models import Q
-
+from django.contrib.auth import login, logout
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger('my_custom_logger')
 
@@ -38,8 +41,10 @@ def user_register(request):
     logger.error(f"User registration failed: {serializer.errors}")
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@csrf_exempt
 def user_login(request):
     logger.info("User login attempt")
     serializer = UserLoginSerializer(data=request.data)
@@ -49,6 +54,7 @@ def user_login(request):
         user = User.objects.filter(email=email).first()
         
         if user and user.check_password(password):
+            login(request, user)
             refresh = RefreshToken.for_user(user)
             logger.info(f"User logged in successfully: {user.email}")
             return Response({
@@ -63,6 +69,7 @@ def user_login(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@login_required()
 def user_logout(request):
     logger.info("User logout attempt")
     try:
@@ -70,6 +77,7 @@ def user_logout(request):
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
+            logout(request)
             logger.info("User logged out successfully")
         
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
@@ -78,8 +86,33 @@ def user_logout(request):
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@csrf_exempt
+def refresh_token(request):
+    logger.info("Token refresh attempt")
+    refresh_token = request.data.get('refresh_token')
+    if not refresh_token:
+        logger.error("No refresh token provided")
+        return Response({'error': 'No refresh token provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        token = RefreshToken(refresh_token)
+        new_access_token = str(token.access_token)
+        new_refresh_token = str(token)
+        logger.info("Token refreshed successfully")
+        return Response({
+            'access': new_access_token,
+            'refresh': new_refresh_token,
+        }, status=status.HTTP_200_OK)
+    except TokenError as e:
+        logger.error(f"Token refresh failed: {str(e)}")
+        return Response({'error': 'Token refresh failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@login_required()
 def invoice_get_create(request):
     if request.method == 'GET':
         page_number = request.query_params.get('page', 1)

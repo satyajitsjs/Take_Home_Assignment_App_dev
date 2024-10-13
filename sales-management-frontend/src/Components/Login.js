@@ -26,12 +26,8 @@ function Login() {
         setSuccess("Login successful!");
         setError("");
 
-        // Set cookies with expiration times
-        const accessTokenExpiry = new Date(new Date().getTime() + 30 * 60 * 1000); // 30 minutes
-        const refreshTokenExpiry = new Date(new Date().getTime() + 24 * 60 * 60 * 1000); // 1 day
-
-        Cookies.set("access_token", response.data.access, { expires: accessTokenExpiry });
-        Cookies.set("refresh_token", response.data.refresh, { expires: refreshTokenExpiry });
+        Cookies.set("access_token", response.data.access);
+        Cookies.set("refresh_token", response.data.refresh);
 
         toast.success("Login successful!");
         navigate("/");
