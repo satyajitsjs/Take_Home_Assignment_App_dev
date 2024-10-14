@@ -5,3 +5,8 @@ ALTER ROLE take_home SET default_transaction_isolation TO 'read committed';
 ALTER ROLE take_home SET timezone TO 'UTC';
 
 GRANT ALL PRIVILEGES ON DATABASE take_home TO take_home;
+
+
+pg_dump -U take_home -h localhost -d take_home -F c -b -v -f local_db_backup.dump
+
+pg_restore -U take_home -d take_home -v /local_db_backup.dump
