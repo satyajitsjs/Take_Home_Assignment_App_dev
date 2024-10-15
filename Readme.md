@@ -109,9 +109,9 @@ sales-management-frontend
      ```
    - Open a terminal and use the following commands to copy the dump data to the Docker database:
      ```bash
-     docker cp local_db_backup.dump db:/local_db_backup.dump
+     docker cp local_db_backup_v2.dump db:/local_db_backup_v2.dump
      docker exec -it db bash
-     pg_restore -U take_home -d take_home -v /local_db_backup.dump
+     pg_restore -U take_home -d take_home -v /local_db_backup_v2.dump
      ```
 
 ## Usage
