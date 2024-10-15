@@ -1,57 +1,159 @@
-For your task, here's a high-level step-by-step approach to guide you through the process. Since you've completed the `User` and `Invoice` models, we can now focus on the remaining tasks. Here's the overall flow:
+### file:///c%3A/Users/satya/OneDrive/Desktop/Take_Home_Assignment_App_dev/README.md
 
-### Step 1: Database Setup and CSV Data Import
-1. **Prepare the database**:
-   - Set up your database (PostgreSQL is a good option for handling large datasets). 
-   - Run migrations to create the necessary tables from your models (`User`, `Invoice`).
-   
-2. **Create a CSV import function**:
-   - Write a Django management command or a utility function that reads your CSV file and populates the `Invoice` model in the database. Use Django's `bulk_create` for efficient insertion.
+```markdown
+# Sales and Stock Management Single Page Application (SPA)
 
-### Step 2: API Endpoints (Django REST Framework)
-3. **Install Django REST Framework (DRF)**:
-   - Set up DRF to expose your backend functionalities as APIs.
-   
-4. **Create APIs**:
-   - Implement the following APIs:
-     - **Login/Logout API**: Use Django’s authentication system.
-     - **Dashboard Data API**: Create endpoints to return aggregated sales, stock, and profit data for different filters (city, county, zip code, etc.).
-     - **Invoice API**: Add the ability to add/update invoices.
-     - **Error Handling**: Ensure proper error responses for exceptions (e.g., database update failures).
+This project is a Single Page Application (SPA) for managing sales, stock, and profit information using a dashboard. It includes secure user login, CSV file imports for database population, and the ability to add and update invoices. The solution is containerized using Docker (optional), supports asynchronous operations, and uses Django for the backend and React for the frontend.
 
-### Step 3: Frontend Development (React)
-5. **Set up React**:
-   - Create your React project and integrate with the Django backend APIs.
-   - Install necessary libraries (e.g., Axios for API calls, React Router for navigation).
+## Features
 
-6. **Create Components**:
-   - **Login Component**: For user authentication.
-   - **Dashboard Component**: To display data from the dashboard API. Implement filtering capabilities (city, zip code, etc.).
-   - **Invoice Component**: To add and update invoices via forms.
+- **User Authentication**: Secure login and logout using JWT tokens.
+- **Dashboard**: View stock, sales, and profit data with filters like:
+  - Store name
+  - City
+  - Zip Code
+  - Store Location
+  - County Number, County
+  - Category, Category Name
+  - Vendor Number, Vendor Name
+  - Item Number
+  - Aggregated data at city, county, and zip code levels.
+- **CSV Import**: Import CSV files to populate the database with stock, sales, and profit data.
+- **Invoice Management**: Add, update, and delete invoices from the UI, with real-time updates on the dashboard.
+- **Error Handling**: Display an error page if any issues occur during operations.
+- **Token Blacklisting**: Invalidate access and refresh tokens on logout for security.
 
-### Step 4: Dashboard Aggregation and Filtering Logic
-7. **Write Aggregation Logic in the Backend**:
-   - Implement Django queryset logic to group and aggregate data based on the requested filters (city, county, etc.). Use Django’s `annotate()` and `aggregate()` methods.
-   
-8. **Create Frontend Filters**:
-   - Build UI components that allow users to select filters (city, county, etc.) and trigger API requests to update the dashboard dynamically.
+## Tech Stack
 
-### Step 5: Async Operations and Optimization
-9. **Optimize Data Queries**:
-   - For large datasets (625k rows), optimize your queries and use pagination when needed. Utilize Django’s `select_related()` and `prefetch_related()` for performance.
-   
-10. **Add Async Operations**:
-    - Ensure that long-running tasks (e.g., CSV import) are run asynchronously using Django’s `celery` or `asyncio` to avoid blocking the server.
+- **Frontend**: React, JavaScript/TypeScript
+- **Backend**: Django, Django REST framework
+- **Database**: PostgreSQL (can be switched to a different service)
+- **Authentication**: JWT tokens with access and refresh token handling
+- **Async Operations**: Async handling for heavy data operations
+- **Containerization**: Docker (optional)
 
-### Step 6: Dockerize the Application
-11. **Create Docker Setup**:
-    - Dockerize your application to run in containers (Django, PostgreSQL, React) for easy deployment.
+## Installation
 
-### Step 7: Testing and Error Handling
-12. **Unit Tests**:
-    - Write tests for the backend APIs and ensure error handling in case of invalid input or database issues.
-   
-13. **Error Pages**:
-    - Implement a frontend error page for cases where updates fail or unexpected errors occur.
+1. **Clone the Repository**
 
-When you're ready, let me know, and I can guide you through the individual steps in detail!
+   ```bash
+   git clone https://github.com/satyajitsjs/Take_Home_Assignment_App_dev.git
+   cd Take_Home_Assignment_App_dev
+   ```
+
+2. **Set Up Environment Variables**
+
+   Create a `.env` file in the root directory and add the following environment variables:
+
+   ```env
+   # PostgreSQL settings
+   POSTGRES_DB=take_home
+   POSTGRES_USER=take_home
+   POSTGRES_PASSWORD=take_home
+   POSTGRES_HOST=db
+   POSTGRES_PORT=5432
+
+   # Cache settings
+   CACHE_TIMEOUT=3600
+
+
+3. **Set Up Backend (Django)**
+
+   - Install dependencies:
+     ```bash
+     pip install -r requirements.txt
+     ```
+   - Apply migrations:
+     ```bash
+     python manage.py migrate
+     ```
+   - Run the development server:
+     ```bash
+     python manage.py runserver
+     ```
+
+4. **Set Up Frontend (React)**
+
+   - Navigate to the 
+
+sales-management-frontend
+
+ directory:
+     ```bash
+     cd sales-management-frontend
+     ```
+   - Install frontend dependencies:
+     ```bash
+     npm install
+     ```
+   - Start the frontend:
+     ```bash
+     npm start
+     ```
+
+5. **Run with Docker (Optional)**
+
+   - Ensure you have Docker installed.
+   - Build and run the container:
+     ```bash
+     docker-compose up --build
+     ```
+   - Open a terminal and use the following commands to copy the dump data to the Docker database:
+     ```bash
+     docker cp local_db_backup.dump db:/local_db_backup.dump
+     docker exec -it db bash
+     pg_restore -U take_home -d take_home -v /local_db_backup.dump
+     ```
+
+## Usage
+
+- **Login**: Use the provided credentials or register a new user.
+- **Dashboard**: Filter sales, stock, and profit data using the dashboard filters.
+- **Invoice Management**: Add, update, or delete invoices and see the dashboard update in real-time.
+- **CSV Import**: Upload a CSV file to populate the database.
+
+## Assumptions and Decisions
+
+- **Backend Framework**: Django was chosen for its robustness in handling APIs and its compatibility with DRF (Django REST framework) for building RESTful APIs.
+- **Frontend Framework**: React was chosen for its ease of integration, reactivity, and developer-friendly ecosystem.
+- **Database**: PostgreSQL was used for its robustness and scalability.
+- **Asynchronous Processing**: Async tasks are used for handling large CSV file imports and ensuring responsive UI.
+
+## API Endpoints (OpenAPI Spec)
+
+| Method | Endpoint                     | Description                                |
+|--------|-------------------------------|--------------------------------------------|
+| POST   | `/api/login/`                 | User login                                 |
+| POST   | `/api/logout/`                | User logout and token blacklisting         |
+| GET    | `/api/dashboard/`             | Fetch dashboard data                       |
+| POST   | `/api/invoices/`              | Create a new invoice                       |
+| GET    | `/api/invoices/`              | List paginated invoices                    |
+| PUT    | `/api/invoices/{invoice_id}/` | Update an invoice                          |
+| DELETE | `/api/invoices/{invoice_id}/` | Delete an invoice                          |
+
+## Design Patterns (Optional)
+
+- **Service Layer Pattern**: The application is divided into layers, separating the business logic from the API logic.
+- **Factory Pattern**: Used for generating tokens and invoices.
+- **Observer Pattern**: Real-time updates on the dashboard after invoice creation and updates.
+
+## Architecture (Optional)
+
+The following diagram outlines the architecture:
+
+```plaintext
++-------------------+          +-----------------------+
+|  Frontend (React) | <------> | Backend (Django REST) |
++-------------------+          +-----------------------+
+         |                            |
+         v                            v
++-------------------+          +-----------------------+
+| Database (PostgreSQL) |      | Async Processing      |
++-------------------+          +-----------------------+
+```
+
+## License
+
+This project is licensed under the MIT License.
+
+---
