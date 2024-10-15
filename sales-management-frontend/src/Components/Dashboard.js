@@ -83,10 +83,13 @@ function Dashboard() {
     store_name: '',
     city: '',
     zip_code: '',
+    store_location: '',
     county_number: '',
     county: '',
     category: '',
+    category_name: '',
     vendor_number: '',
+    vendor_name: '',
     item_number: ''
   };
   const [filters, setFilters] = useState(initialFilters);

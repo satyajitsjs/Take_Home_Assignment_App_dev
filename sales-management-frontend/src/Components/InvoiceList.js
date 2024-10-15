@@ -37,10 +37,10 @@ function InvoiceList({ invoices, onEdit, onDelete, page, totalPages, onPageChang
             {invoices.map((invoice) => (
               <TableRow key={invoice.id}>
                 <TableCell>{invoice.invoice_number}</TableCell>
-                <TableCell>{invoice.store_name}</TableCell>
-                <TableCell>{invoice.city}</TableCell>
-                <TableCell>{invoice.zip_code}</TableCell>
-                <TableCell>{invoice.county}</TableCell>
+                <TableCell>{invoice.store.store_name}</TableCell>
+                <TableCell>{invoice.store.city}</TableCell>
+                <TableCell>{invoice.store.zip_code}</TableCell>
+                <TableCell>{invoice.store.county}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"

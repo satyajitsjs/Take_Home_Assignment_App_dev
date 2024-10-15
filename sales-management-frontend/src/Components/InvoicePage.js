@@ -16,6 +16,7 @@ function InvoicePage() {
 
   useEffect(() => {
     fetchInvoices();
+     // eslint-disable-next-line
   }, [page]);
 
   const fetchInvoices = async () => {
@@ -27,6 +28,7 @@ function InvoicePage() {
       });
       setInvoices(response.data.results);
       setTotalPages(Math.ceil(response.data.count / 100)); 
+      console.log(response.data.results);
     } catch (error) {
       console.error('Failed to fetch invoices', error);
       toast.error('Failed to fetch invoices');

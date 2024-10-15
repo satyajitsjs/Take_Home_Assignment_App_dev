@@ -1,35 +1,24 @@
-// src/Components/InvoiceForm.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
-import { TextField, Button, Container, Box, Typography } from "@mui/material";
+import { TextField, Button, Container, Box, Typography, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-function InvoiceForm({ invoice, onSave, onCancel }) {
+
+const InvoiceForm = React.memo(({ invoice, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     invoice_number: "",
     date: "",
-    store_number: "",
-    store_name: "",
-    address: "",
-    city: "",
-    zip_code: "",
-    store_location: "",
-    county_number: "",
-    county: "",
-    category: "",
-    category_name: "",
-    vendor_number: "",
-    vendor_name: "",
-    item_number: "",
-    item_desc: "",
-    pack: "",
-    bottle_volume_ml: "",
-    state_bottle_cost: "",
-    state_bottle_retail: "",
+    store_id: "",
+    item_id: "",
     bottles_sold: "",
     sale_dollars: "",
     volume_sold_liters: "",
     volume_sold_gallons: "",
+  });
+
+  const [foreignKeyData, setForeignKeyData] = useState({
+    stores: [],
+    items: [],
   });
 
   useEffect(() => {
@@ -38,12 +27,31 @@ function InvoiceForm({ invoice, onSave, onCancel }) {
     }
   }, [invoice]);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  useEffect(() => {
+    const fetchInvoiceSelectData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/get_invoice_select_data/`, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+        });
+        setForeignKeyData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch foreign key data", error);
+        toast.error("Failed to fetch foreign key data");
+      }
+    };
+
+    fetchInvoiceSelectData();
+  }, []);
+
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,6 +99,22 @@ function InvoiceForm({ invoice, onSave, onCancel }) {
     }
   };
 
+  const storeOptions = useMemo(() => (
+    foreignKeyData.stores.map((store) => (
+      <MenuItem key={store.id} value={store.id}>
+        {store.store_name}
+      </MenuItem>
+    ))
+  ), [foreignKeyData.stores]);
+
+  const itemOptions = useMemo(() => (
+    foreignKeyData.items.map((item) => (
+      <MenuItem key={item.id} value={item.id}>
+        {item.item_desc}
+      </MenuItem>
+    ))
+  ), [foreignKeyData.items]);
+
   return (
     <Container>
       <Box mt={5}>
@@ -116,150 +140,26 @@ function InvoiceForm({ invoice, onSave, onCancel }) {
             margin="normal"
             InputLabelProps={{ shrink: true }}
           />
-          <TextField
-            label="Store Number"
-            name="store_number"
-            value={formData.store_number}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Store Name"
-            name="store_name"
-            value={formData.store_name}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Address"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="City"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Zip Code"
-            name="zip_code"
-            value={formData.zip_code}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Store Location"
-            name="store_location"
-            value={formData.store_location}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="County Number"
-            name="county_number"
-            value={formData.county_number}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="County"
-            name="county"
-            value={formData.county}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Category"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Category Name"
-            name="category_name"
-            value={formData.category_name}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Vendor Number"
-            name="vendor_number"
-            value={formData.vendor_number}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Vendor Name"
-            name="vendor_name"
-            value={formData.vendor_name}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Item Number"
-            name="item_number"
-            value={formData.item_number}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Item Description"
-            name="item_desc"
-            value={formData.item_desc}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Pack"
-            name="pack"
-            value={formData.pack}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Bottle Volume (ml)"
-            name="bottle_volume_ml"
-            value={formData.bottle_volume_ml}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="State Bottle Cost"
-            name="state_bottle_cost"
-            value={formData.state_bottle_cost}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="State Bottle Retail"
-            name="state_bottle_retail"
-            value={formData.state_bottle_retail}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Store</InputLabel>
+            <Select
+              name="store_id"
+              value={formData.store_id}
+              onChange={handleChange}
+            >
+              {storeOptions}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Item</InputLabel>
+            <Select
+              name="item_id"
+              value={formData.item_id}
+              onChange={handleChange}
+            >
+              {itemOptions}
+            </Select>
+          </FormControl>
           <TextField
             label="Bottles Sold"
             name="bottles_sold"
@@ -309,6 +209,6 @@ function InvoiceForm({ invoice, onSave, onCancel }) {
       </Box>
     </Container>
   );
-}
+});
 
 export default InvoiceForm;

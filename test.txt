@@ -1,10 +1,11 @@
 CREATE USER take_home WITH PASSWORD 'take_home';
 
+ALTER DATABASE take_home_v2 OWNER TO take_home;
 ALTER ROLE take_home SET client_encoding TO 'utf8';
 ALTER ROLE take_home SET default_transaction_isolation TO 'read committed';
 ALTER ROLE take_home SET timezone TO 'UTC';
 
-GRANT ALL PRIVILEGES ON DATABASE take_home TO take_home;
+GRANT ALL PRIVILEGES ON DATABASE take_home_v2 TO take_home;
 
 
 pg_dump -U take_home -h localhost -d take_home -F c -b -v -f local_db_backup.dump

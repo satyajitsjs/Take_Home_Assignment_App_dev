@@ -4,9 +4,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework import status
-from .serializers import UserRegisterSerializer, UserLoginSerializer, InvoiceSerializer
+from .serializers import UserRegisterSerializer, UserLoginSerializer, InvoiceSerializer,StoreSerializer,ItemSerializer
 from django.contrib.auth import get_user_model
-from .models import Invoice
+from .models import Invoice, Store, Item,Category,Vendor
 from django.core.cache import cache
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum
@@ -128,7 +128,7 @@ def invoice_get_create(request):
         paginator = PageNumberPagination()
         paginator.page_size = 100 
 
-        invoices = Invoice.objects.all().order_by('-id')
+        invoices = Invoice.objects.select_related('store', 'item__category', 'item__vendor').all().order_by('-id')
         result_page = paginator.paginate_queryset(invoices, request)
 
         serializer = InvoiceSerializer(result_page, many=True)
@@ -138,6 +138,7 @@ def invoice_get_create(request):
         logger.info(f"Caching data for page {page_number}")
 
         return Response(response_data, status=status.HTTP_200_OK)
+
 
     if request.method == 'POST':
         logger.info("Creating a new invoice")
@@ -149,6 +150,31 @@ def invoice_get_create(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         logger.error(f"Invoice creation failed: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_invoice_select_data(request):
+    cache_key = 'invoice_select_data'
+    cached_data = cache.get(cache_key)
+
+    if cached_data:
+        return Response(cached_data, status=status.HTTP_200_OK)
+
+    stores = Store.objects.all()
+    items = Item.objects.select_related('category', 'vendor').all()
+
+    store_serializer = StoreSerializer(stores, many=True)
+    item_serializer = ItemSerializer(items, many=True)
+
+    response_data = {
+        'stores': store_serializer.data,
+        'items': item_serializer.data,
+    }
+
+    cache.set(cache_key, response_data, timeout=settings.CACHE_TIMEOUT)
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 def invalidate_invoice_page(invoice):
@@ -228,24 +254,25 @@ def invoice_get_update_delete(request, invoice_id):
 def dashboard_data(request):
     logger.info("Fetching dashboard data")
     filters = {
-        'store_name': request.GET.get('store_name', None),
-        'city': request.GET.get('city', None),
-        'zip_code': request.GET.get('zip_code', None),
-        'county_number': request.GET.get('county_number', None),
-        'county': request.GET.get('county', None),
-        'category': request.GET.get('category', None),
-        'vendor_number': request.GET.get('vendor_number', None),
-        'item_number': request.GET.get('item_number', None),
+        'store__store_name__icontains': request.GET.get('store_name', None),
+        'store__city__icontains': request.GET.get('city', None),
+        'store__zip_code__icontains': request.GET.get('zip_code', None),
+        'store__store_location__icontains': request.GET.get('store_location', None),
+        'store__county_number__icontains': request.GET.get('county_number', None),
+        'store__county__icontains': request.GET.get('county', None),
+        'item__category__category_name__icontains': request.GET.get('category_name', None),
+        'item__category__category_number__icontains': request.GET.get('category', None),  # Fixed key for category_number
+        'item__vendor__vendor_number__icontains': request.GET.get('vendor_number', None),
+        'item__vendor__vendor_name__icontains': request.GET.get('vendor_name', None),
+        'item__item_number__icontains': request.GET.get('item_number', None),
     }
 
-    queryset = Invoice.objects.all()
-    filters_applied = False
 
+    queryset = Invoice.objects.all()
     for key, value in filters.items():
         if value:
             logger.info(f"Filtering by {key}: {value}")
             queryset = queryset.filter(**{key: value})
-            filters_applied = True
 
     aggregated_data = queryset.aggregate(
         total_stock=Sum('bottles_sold'), 
@@ -253,14 +280,11 @@ def dashboard_data(request):
         total_profit=Sum('state_bottle_cost'),
     )
 
-    if filters_applied:
-        sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))
-        stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))
-        profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))
-    else:
-        sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))[:10]
-        stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))[:10]
-        profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))[:10]
+
+
+    sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))[:15]
+    stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))[:15]
+    profit_data = queryset.values('date').annotate(total_profit=Sum('state_bottle_cost'))[:15]
 
     response_data = {
         'total_stock': aggregated_data['total_stock'],
@@ -283,23 +307,45 @@ def dashboard_data(request):
     logger.info("Dashboard data fetched successfully")
     return Response(response_data, status=status.HTTP_200_OK)
 
-
 def autocomplete(request):
-    query = request.GET.get('query', '')
-    filter_type = request.GET.get('filter_type', '')
+    logger.info(request)
+    query = request.GET.get('query', '').strip()
+    filter_type = request.GET.get('filter_type', '').strip()
+    logger.info(f"Autocomplete request: {query} ({filter_type})")
 
     if not query or not filter_type:
         return JsonResponse({'results': []})
 
     try:
-        filter_kwargs = {f"{filter_type}__icontains": query}
-        results = Invoice.objects.filter(**filter_kwargs).values_list(filter_type, flat=True).distinct()
+        if filter_type == 'store_name':
+            results = Store.objects.filter(store_name__icontains=query).values_list('store_name', flat=True).distinct()
+        elif filter_type == 'city':
+            results = Store.objects.filter(city__icontains=query).values_list('city', flat=True).distinct()
+        elif filter_type == 'zip_code':
+            results = Store.objects.filter(zip_code__icontains=query).values_list('zip_code', flat=True).distinct()
+        elif filter_type == 'store_location':
+            results = Store.objects.filter(store_location__icontains=query).values_list('store_location', flat=True).distinct()
+        elif filter_type == 'county_number':
+            results = Store.objects.filter(county_number__icontains=query).values_list('county_number', flat=True).distinct()
+        elif filter_type == 'county':
+            results = Store.objects.filter(county__icontains=query).values_list('county', flat=True).distinct()
+        elif filter_type == 'category':
+            results = Category.objects.filter(category_number__icontains=query).values_list('category_number', flat=True).distinct()
+        elif filter_type == 'category_name':
+            results = Category.objects.filter(category_name__icontains=query).values_list('category_name', flat=True).distinct()
+        elif filter_type == 'vendor_number':
+            results = Vendor.objects.filter(vendor_number__icontains=query).values_list('vendor_number', flat=True).distinct()
+        elif filter_type == 'vendor_name':
+            results = Vendor.objects.filter(vendor_name__icontains=query).values_list('vendor_name', flat=True).distinct()
+        elif filter_type == 'item_number':
+            results = Invoice.objects.filter(item__item_number__icontains=query).values_list('item__item_number', flat=True).distinct()
+        else:
+            results = []
 
         return JsonResponse({'results': list(results)})
     except Exception as e:
         logger.error(f"Autocomplete error: {e}")
         return JsonResponse({'results': [], 'error': 'An error occurred while processing your request.'})
-
 
 def handler404(request, exception):
     logger.error("404 error occurred")

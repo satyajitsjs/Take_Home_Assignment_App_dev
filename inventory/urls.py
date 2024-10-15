@@ -9,6 +9,7 @@ urlpatterns = [
 
     path('invoices/', v.invoice_get_create, name='invoices'),
     path('invoices/<int:invoice_id>/', v.invoice_get_update_delete, name='invoice'),
+    path('get_invoice_select_data/', v.get_invoice_select_data, name='get_invoice_select_data'),
 
     path('dashboard/', v.dashboard_data, name='dashboard_data'),
 
