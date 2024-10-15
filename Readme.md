@@ -1,9 +1,17 @@
-### file:///c%3A/Users/satya/OneDrive/Desktop/Take_Home_Assignment_App_dev/README.md
+# Take_Home_Assignment_App_dev
 
 ```markdown
 # Sales and Stock Management Single Page Application (SPA)
 
-This project is a Single Page Application (SPA) for managing sales, stock, and profit information using a dashboard. It includes secure user login, CSV file imports for database population, and the ability to add and update invoices. The solution is containerized using Docker (optional), supports asynchronous operations, and uses Django for the backend and React for the frontend.
+```markdown
+This project is a Single Page Application (SPA) for managing sales, stock, and profit information using a dashboard. It includes:
+
+- Secure user login
+- CSV file imports for database population
+- The ability to add and update invoices
+
+The solution is containerized using Docker (optional), supports asynchronous operations, and uses Django for the backend and React for the frontend.
+```
 
 ## Features
 
