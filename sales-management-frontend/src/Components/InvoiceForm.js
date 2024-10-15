@@ -23,7 +23,11 @@ const InvoiceForm = React.memo(({ invoice, onSave, onCancel }) => {
 
   useEffect(() => {
     if (invoice) {
-      setFormData(invoice);
+      setFormData({
+        ...invoice,
+        store_id: invoice.store.id, // Set store_id from the store object
+        item_id: invoice.item.id,    // Set item_id from the item object
+      }); 
     }
   }, [invoice]);
 
@@ -144,7 +148,7 @@ const InvoiceForm = React.memo(({ invoice, onSave, onCancel }) => {
             <InputLabel>Store</InputLabel>
             <Select
               name="store_id"
-              value={formData.store_id}
+              value={formData.store_id || ""}
               onChange={handleChange}
             >
               {storeOptions}
@@ -154,7 +158,7 @@ const InvoiceForm = React.memo(({ invoice, onSave, onCancel }) => {
             <InputLabel>Item</InputLabel>
             <Select
               name="item_id"
-              value={formData.item_id}
+              value={formData.item_id || ""}
               onChange={handleChange}
             >
               {itemOptions}

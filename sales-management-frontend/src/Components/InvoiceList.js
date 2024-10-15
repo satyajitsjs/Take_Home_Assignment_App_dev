@@ -27,6 +27,7 @@ function InvoiceList({ invoices, onEdit, onDelete, page, totalPages, onPageChang
             <TableRow>
               <TableCell><b>Invoice Number</b></TableCell>
               <TableCell><b>Store Name</b></TableCell>
+              <TableCell><b>Itmes</b></TableCell>
               <TableCell><b>City</b></TableCell>
               <TableCell><b>Zip Code</b></TableCell>
               <TableCell><b>County</b></TableCell>
@@ -38,6 +39,7 @@ function InvoiceList({ invoices, onEdit, onDelete, page, totalPages, onPageChang
               <TableRow key={invoice.id}>
                 <TableCell>{invoice.invoice_number}</TableCell>
                 <TableCell>{invoice.store.store_name}</TableCell>
+                <TableCell>{invoice.item.item_desc}</TableCell>
                 <TableCell>{invoice.store.city}</TableCell>
                 <TableCell>{invoice.store.zip_code}</TableCell>
                 <TableCell>{invoice.store.county}</TableCell>
