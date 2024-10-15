@@ -98,7 +98,7 @@ sales-management-frontend
      npm start
      ```
 
-5. **Run with Docker (Optional)**
+5. **Run with Docker**
 
    - Ensure you have Docker installed.
    - Build and run the container:
