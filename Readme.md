@@ -78,7 +78,7 @@ The solution is containerized using Docker (optional), supports asynchronous ope
      ```
    - Run the development server:
      ```bash
-     python manage.py runserver
+     python manage.py runserver --insecure 
      ```
 
 4. **Set Up Frontend (React)**
