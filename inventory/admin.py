@@ -4,7 +4,6 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Invoice, Store, Vendor, Category, Item, User
 
-# Register your models here.
 
 class UserAdmin(BaseUserAdmin):
     # The forms to add and change user instances
@@ -61,16 +60,9 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ["item_number", "item_desc", "category__category_name", "vendor__vendor_name", "store__store_name"]
     ordering = ["item_number"]
 
-# Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)
-# ... and, since we're not using Django's built-in permissions,
-# unregister the Group model from admin.
 admin.site.unregister(Group)
-
-# Register the Invoice model with the custom InvoiceAdmin
 admin.site.register(Invoice, InvoiceAdmin)
-
-# Register other models with their custom admin classes
 admin.site.register(Store, StoreAdmin)
 admin.site.register(Vendor, VendorAdmin)
 admin.site.register(Category, CategoryAdmin)

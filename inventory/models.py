@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from .manager import UserManager
-# Create your models here.
 
 class User(AbstractBaseUser):
     email = models.EmailField(
@@ -110,8 +109,8 @@ class Invoice(models.Model):
     sale_dollars = models.DecimalField(max_digits=10, decimal_places=2)
     volume_sold_liters = models.FloatField()
     volume_sold_gallons = models.FloatField()
-    state_bottle_cost = models.DecimalField(max_digits=10, decimal_places=2,default=0)  # Add this field
-    state_bottle_retail = models.DecimalField(max_digits=10, decimal_places=2,default=0)  # Add this field
+    state_bottle_cost = models.DecimalField(max_digits=10, decimal_places=2,default=0)  
+    state_bottle_retail = models.DecimalField(max_digits=10, decimal_places=2,default=0)  
 
 
     def __str__(self):

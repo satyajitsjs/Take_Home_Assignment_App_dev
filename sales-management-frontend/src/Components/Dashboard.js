@@ -42,19 +42,19 @@ const useStyles = makeStyles(() => ({
     textAlign: 'center',
   },
   card: {
-    marginTop: 24, // 3 * 8px (default spacing unit)
-    marginBottom: 32, // 3 * 8px (default spacing unit)
+    marginTop: 24, 
+    marginBottom: 32, 
   },
   filterButton: {
-    marginTop: 16, // 2 * 8px (default spacing unit)
+    marginTop: 16, 
   },
   clearButton: {
-    marginTop: 16, // 2 * 8px (default spacing unit)
-    marginLeft: 8, // 1 * 8px (default spacing unit)
+    marginTop: 16, 
+    marginLeft: 8,
   },
   icon: {
     verticalAlign: 'middle',
-    marginRight: 8, // 1 * 8px (default spacing unit)
+    marginRight: 8,
   },
   loading: {
     display: 'flex',
@@ -181,7 +181,6 @@ function Dashboard() {
         ? [...prevSelectedFilters, name]
         : prevSelectedFilters.filter(filter => filter !== name);
 
-      // Remove the filter value from the filters object if it is deselected
       if (!checked) {
         setFilters(prevFilters => {
           const newFilters = { ...prevFilters };

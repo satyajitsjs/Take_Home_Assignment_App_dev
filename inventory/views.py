@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework import status
-from .serializers import UserRegisterSerializer, UserLoginSerializer, InvoiceSerializer,StoreSerializer,ItemSerializer
+from .serializers import UserSerializer,UserLoginSerializer,InvoiceSerializer,StoreSerializer,ItemSerializer
 from django.contrib.auth import get_user_model
 from .models import Invoice, Store, Item,Category,Vendor
 from django.core.cache import cache
@@ -32,9 +32,15 @@ def index(request):
 @permission_classes([AllowAny])
 def user_register(request): 
     logger.info("User registration attempt")
-    serializer = UserRegisterSerializer(data=request.data)
+    serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
+        user_data = serializer.validated_data
+        user = User(
+            email=user_data['email'],
+            name=user_data['name']
+        )
+        user.set_password(user_data['password'])
+        user.save()
         logger.info(f"User registered successfully: {user.email}")
         return Response({
             'email': user.email,
@@ -213,7 +219,6 @@ def invoice_get_update_delete(request, invoice_id):
         logger.error(f"Invoice not found: {invoice_id}")
         return Response({'error': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    # Retrieve a single invoice by ID (GET)
     if request.method == 'GET':
         serializer = InvoiceSerializer(invoice)
         response_data = serializer.data
@@ -221,14 +226,12 @@ def invoice_get_update_delete(request, invoice_id):
         logger.info(f"Retrieved invoice {invoice_id}")
         return Response(response_data, status=status.HTTP_200_OK)
 
-    # Update an existing invoice by ID (PUT)
     elif request.method == 'PUT':
         logger.info(f"Updating invoice {invoice_id}")
         serializer = InvoiceSerializer(invoice, data=request.data)
         if serializer.is_valid():
             serializer.save()
 
-            # Invalidate the specific page(s) that contain the invoice
             invalidate_invoice_page(invoice)
 
             cache.set(cache_key, serializer.data, timeout=settings.CACHE_TIMEOUT)
@@ -240,13 +243,11 @@ def invoice_get_update_delete(request, invoice_id):
     elif request.method == 'DELETE':
         logger.info(f"Deleting invoice {invoice_id}")
 
-        # Invalidate the specific page(s) that contain the invoice before deleting it
         invalidate_invoice_page(invoice)
 
         invoice.delete()
         logger.info(f"Invoice {invoice_id} deleted successfully")
         return Response({'message': 'Invoice deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-
 
 
 @api_view(['GET'])
@@ -261,12 +262,18 @@ def dashboard_data(request):
         'store__county_number__icontains': request.GET.get('county_number', None),
         'store__county__icontains': request.GET.get('county', None),
         'item__category__category_name__icontains': request.GET.get('category_name', None),
-        'item__category__category_number__icontains': request.GET.get('category', None),  # Fixed key for category_number
+        'item__category__category_number__icontains': request.GET.get('category', None), 
         'item__vendor__vendor_number__icontains': request.GET.get('vendor_number', None),
         'item__vendor__vendor_name__icontains': request.GET.get('vendor_name', None),
         'item__item_number__icontains': request.GET.get('item_number', None),
     }
 
+    cache_key = f"dashboard_data_{'_'.join([f'{k}_{v}' for k, v in filters.items() if v])}"
+    cached_data = cache.get(cache_key)
+
+    if cached_data is not None:
+        logger.info("Serving cached dashboard data")
+        return Response(cached_data, status=status.HTTP_200_OK)
 
     queryset = Invoice.objects.all()
     for key, value in filters.items():
@@ -279,8 +286,6 @@ def dashboard_data(request):
         total_sales=Sum('sale_dollars'),  
         total_profit=Sum('state_bottle_cost'),
     )
-
-
 
     sales_data = queryset.values('date').annotate(total_sales=Sum('sale_dollars'))[:15]
     stock_data = queryset.values('date').annotate(total_stock=Sum('bottles_sold'))[:15]
@@ -304,17 +309,25 @@ def dashboard_data(request):
         },
     }
 
-    logger.info("Dashboard data fetched successfully")
+    cache.set(cache_key, response_data, timeout=settings.CACHE_TIMEOUT)
+    logger.info("Dashboard data fetched and cached successfully")
     return Response(response_data, status=status.HTTP_200_OK)
 
+
 def autocomplete(request):
-    logger.info(request)
     query = request.GET.get('query', '').strip()
     filter_type = request.GET.get('filter_type', '').strip()
     logger.info(f"Autocomplete request: {query} ({filter_type})")
 
     if not query or not filter_type:
         return JsonResponse({'results': []})
+
+    cache_key = f"autocomplete_{filter_type}_{query}"
+    cached_results = cache.get(cache_key)
+
+    if cached_results is not None:
+        logger.info(f"Serving cached results for query: {query} ({filter_type})")
+        return JsonResponse({'results': cached_results})
 
     try:
         if filter_type == 'store_name':
@@ -342,14 +355,20 @@ def autocomplete(request):
         else:
             results = []
 
-        return JsonResponse({'results': list(results)})
+        results_list = list(results)
+        cache.set(cache_key, results_list, timeout=settings.CACHE_TIMEOUT)
+        logger.info(f"Caching results for query: {query} ({filter_type})")
+
+        return JsonResponse({'results': results_list})
     except Exception as e:
         logger.error(f"Autocomplete error: {e}")
         return JsonResponse({'results': [], 'error': 'An error occurred while processing your request.'})
 
+
 def handler404(request, exception):
     logger.error("404 error occurred")
     return render(request, 'templates/errors/404.html', status=404)
+
 
 def handler500(request):
     logger.error("500 error occurred")

@@ -232,7 +232,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'colored',  # Use colored formatting
+            'formatter': 'colored',  
         },
     },
     'formatters': {
@@ -250,17 +250,17 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',  # Set to INFO so that INFO logs are displayed
+        'level': 'INFO',  
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'WARNING',  # This can stay at WARNING for Django internals
+            'level': 'WARNING',  
             'propagate': False,
         },
         'my_custom_logger': {
             'handlers': ['console'],
-            'level': 'INFO',  # Use INFO level so the logs show up
+            'level': 'INFO', 
             'propagate': False,
         },
     },

@@ -25,8 +25,8 @@ const InvoiceForm = React.memo(({ invoice, onSave, onCancel }) => {
     if (invoice) {
       setFormData({
         ...invoice,
-        store_id: invoice.store.id, // Set store_id from the store object
-        item_id: invoice.item.id,    // Set item_id from the item object
+        store_id: invoice.store.id, 
+        item_id: invoice.item.id,
       }); 
     }
   }, [invoice]);

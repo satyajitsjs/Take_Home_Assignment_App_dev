@@ -1,4 +1,3 @@
-// src/Components/InvoicePage.js
 import React, { useState, useEffect } from 'react';
 import InvoiceList from './InvoiceList';
 import InvoiceForm from './InvoiceForm';
