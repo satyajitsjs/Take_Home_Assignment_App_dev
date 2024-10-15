@@ -137,13 +137,12 @@ sales-management-frontend
 | PUT    | `/api/invoices/{invoice_id}/` | Update an invoice                          |
 | DELETE | `/api/invoices/{invoice_id}/` | Delete an invoice                          |
 
-## Design Patterns (Optional)
-
+## Design Patterns
 - **Service Layer Pattern**: The application is divided into layers, separating the business logic from the API logic.
 - **Factory Pattern**: Used for generating tokens and invoices.
 - **Observer Pattern**: Real-time updates on the dashboard after invoice creation and updates.
 
-## Architecture (Optional)
+## Architecture
 
 The following diagram outlines the architecture:
 
