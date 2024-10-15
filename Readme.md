@@ -61,7 +61,10 @@ The solution is containerized using Docker (optional), supports asynchronous ope
 
    # Cache settings
    CACHE_TIMEOUT=3600
-
+   
+  SECRET_KEY='django-insecure-84b7r&uz7*^1$)g++4$65jljc(d9r4+@k-kl_o9a+f06$xwc4f'
+  DEBUG=False
+  ALLOWED_HOSTS=*
 
 3. **Set Up Backend (Django)**
 
