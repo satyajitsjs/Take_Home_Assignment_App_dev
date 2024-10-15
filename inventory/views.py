@@ -25,6 +25,9 @@ logger = logging.getLogger('my_custom_logger')
 
 User = get_user_model()
 
+def index(request):
+    return render(request, 'index.html')
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def user_register(request): 
@@ -300,8 +303,8 @@ def autocomplete(request):
 
 def handler404(request, exception):
     logger.error("404 error occurred")
-    return render(request, 'errors/404.html', status=404)
+    return render(request, 'templates/errors/404.html', status=404)
 
 def handler500(request):
     logger.error("500 error occurred")
-    return render(request, 'errors/500.html', status=500)
+    return render(request, 'templates/errors/500.html', status=500)

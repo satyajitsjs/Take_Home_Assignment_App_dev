@@ -1,6 +1,4 @@
-# Dockerfile for Django Backend
-
-# Use the official Python image from the Docker Hub
+# Use the official Python image to set up the Django backend
 FROM python:3.11-slim
 
 # Set environment variables
@@ -24,4 +22,4 @@ COPY . /app/
 EXPOSE 8000
 
 # Run the application with database migration
-CMD ["python manage.py migrate; python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --insecure"]

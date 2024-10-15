@@ -9,4 +9,8 @@ GRANT ALL PRIVILEGES ON DATABASE take_home TO take_home;
 
 pg_dump -U take_home -h localhost -d take_home -F c -b -v -f local_db_backup.dump
 
+
+
+docker cp local_db_backup.dump db:/local_db_backup.dump
+docker exec -it db bash
 pg_restore -U take_home -d take_home -v /local_db_backup.dump

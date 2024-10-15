@@ -16,12 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path , include
-
-
+from django.views.generic import TemplateView
+from inventory import views as v
 handler404 = 'inventory.views.handler404'
 handler500 = 'inventory.views.handler500'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/',include('inventory.urls'))
+    path('',v.index),
+    path('api/',include('inventory.urls')),
+    path('<path:dummy>', TemplateView.as_view(template_name='index.html')),
+    
 ]
