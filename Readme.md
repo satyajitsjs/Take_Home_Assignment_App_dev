@@ -34,10 +34,9 @@ The solution is containerized using Docker (optional), supports asynchronous ope
 
 - **Frontend**: React, JavaScript/TypeScript
 - **Backend**: Django, Django REST framework
-- **Database**: PostgreSQL (can be switched to a different service)
+- **Database**: PostgreSQL
 - **Authentication**: JWT tokens with access and refresh token handling
-- **Async Operations**: Async handling for heavy data operations
-- **Containerization**: Docker (optional)
+- **Containerization**: Docker
 
 ## Installation
 
