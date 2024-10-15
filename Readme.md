@@ -1,4 +1,4 @@
-# Take_Home_Assignment_App_dev
+# Take_Home_Assignment_App_dev_v2
 
 ```markdown
 # Sales and Stock Management Single Page Application (SPA)
