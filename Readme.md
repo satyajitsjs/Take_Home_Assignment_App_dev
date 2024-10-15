@@ -1,4 +1,4 @@
-### file:///c%3A/Users/satya/OneDrive/Desktop/Take_Home_Assignment_App_dev/README.md
+# Take_Home_Assignment_App_dev
 
 ```markdown
 # Sales and Stock Management Single Page Application (SPA)
